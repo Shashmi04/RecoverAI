@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RecoverAI - Payment Recovery</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(99,102,241,.10), transparent 28%),
+                radial-gradient(circle at 90% 20%, rgba(16,185,129,.08), transparent 25%),
+                #f4f7fb;
+            color: #172033;
+        }
+
+        .header {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0b1220, #111827 55%, #172554);
+            color: white;
+            padding: 42px 28px 38px;
+            text-align: center;
+            box-shadow: 0 10px 35px rgba(15,23,42,.20);
+        }
+
+        .header::before,
+        .header::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: .28;
+            animation: float 7s ease-in-out infinite;
+        }
+
+        .header::before {
+            width: 220px; height: 220px;
+            background: #6366f1;
+            left: -70px; top: -130px;
+        }
+
+        .header::after {
+            width: 180px; height: 180px;
+            background: #10b981;
+            right: -50px; bottom: -110px;
+            animation-delay: -2s;
+        }
+
+        .header h1 {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            font-size: 42px;
+            letter-spacing: -1px;
+            text-shadow: 0 0 24px rgba(129,140,248,.45);
+            animation: fadeDown .7s ease both;
+        }
+
+        .header p {
+            position: relative;
+            z-index: 1;
+            margin: 10px 0 0;
+            color: #cbd5e1;
+            font-size: 17px;
+            animation: fadeUp .8s ease both;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 34px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: rgba(255,255,255,.94);
+            border: 1px solid rgba(226,232,240,.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 12px 35px rgba(15,23,42,.08);
+            backdrop-filter: blur(8px);
+            animation: fadeUp .65s ease both;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #0f172a;
+            font-size: 24px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border-radius: 16px;
+            padding: 23px;
+            border: 1px solid #e2e8f0;
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+
+        .kpi-card::after {
+            content: "";
+            position: absolute;
+            width: 75px;
+            height: 75px;
+            right: -28px;
+            top: -28px;
+            border-radius: 50%;
+            background: rgba(99,102,241,.08);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(15,23,42,.13);
+            border-color: #c7d2fe;
+        }
+
+        .kpi-card h3 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #64748b;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-subtitle {
+            margin-top: 7px;
+            font-size: 13px;
+            color: #64748b;
+            position: relative;
+            z-index: 1;
+        }
+
+        .value-box {
+            background: linear-gradient(145deg, #ecfdf5, #f0fdf4);
+            border-color: #a7f3d0;
+        }
+
+        .value-box .kpi-value { color: #047857; }
+
+        .overall-rate {
+            text-align: center;
+            margin-top: 28px;
+            padding: 25px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            border: 1px solid #e0e7ff;
+        }
+
+        .overall-rate h3 {
+            color: #64748b;
+            margin: 0 0 8px;
+        }
+
+        .rate-value {
+            font-size: 46px;
+            font-weight: 900;
+            color: #4f46e5;
+            text-shadow: 0 4px 18px rgba(79,70,229,.18);
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .analytics-box {
+            padding: 23px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #f8fafc, #ffffff);
+            border: 1px solid #e2e8f0;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .analytics-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(15,23,42,.09);
+        }
+
+        .analytics-box h3 { margin-top: 0; color: #1e293b; }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .metric-row:last-child { border-bottom: none; }
+
+        .metric-value {
+            font-weight: 800;
+            color: #4f46e5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 7px;
+            color: #334155;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #fff;
+            transition: .2s ease;
+        }
+
+        input:hover, select:hover { border-color: #94a3b8; }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+        }
+
+        .predict-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 16px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 9px 22px rgba(79,70,229,.25);
+            transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 13px 28px rgba(79,70,229,.34);
+            filter: brightness(1.05);
+        }
+
+        .predict-btn:active { transform: translateY(0); }
+
+        .results {
+            display: none;
+            border: 1px solid #c7d2fe;
+            box-shadow: 0 16px 40px rgba(79,70,229,.13);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .result-card {
+            padding: 22px;
+            border-radius: 15px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transition: transform .2s ease;
+        }
+
+        .result-card:hover { transform: translateY(-3px); }
+
+        .result-card h3 {
+            margin: 0 0 12px;
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        .result-value {
+            font-size: 26px;
+            font-weight: 850;
+            color: #0f172a;
+        }
+
+        .probability-bar {
+            width: 100%;
+            height: 18px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .probability-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6366f1, #10b981);
+            border-radius: 12px;
+            transition: width 1s cubic-bezier(.2,.8,.2,1);
+            box-shadow: 0 0 12px rgba(16,185,129,.3);
+        }
+
+        .priority {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 800;
+        }
+
+        .priority-high { background: #dcfce7; color: #166534; }
+        .priority-medium { background: #fef3c7; color: #92400e; }
+        .priority-low { background: #fee2e2; color: #991b1b; }
+
+        .action-box {
+            background: linear-gradient(145deg, #eef2ff, #f5f3ff);
+            border-color: #c7d2fe;
+        }
+
+        .action-box .result-value { color: #4338ca; }
+
+        .error {
+            margin-top: 15px;
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(12px) scale(1.05); }
+        }
+
+        @media (max-width: 900px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 700px) {
+            .form-grid, .result-grid, .analytics-grid, .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 { font-size: 30px; }
+            .card { padding: 22px; }
+            .rate-value { font-size: 38px; }
+        }
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+<div class="header">
+
+    <h1>RecoverAI</h1>
+
+    <p>
+        AI-Driven Payment Recovery System
+    </p>
+
+</div>
+
+
+<div class="container">
+
+
+<!-- ================================================= -->
+<!-- BUSINESS OVERVIEW -->
+<!-- ================================================= -->
+
+<div class="card">
+
+    <h2>📊 Business Overview</h2>
+
+    <div class="kpi-grid">
+
+        <div class="kpi-card">
+
+            <h3>Total Transactions</h3>
+
+            <div class="kpi-value">
+                10,000
+            </div>
+
+            <div class="kpi-subtitle">
+                Transactions analyzed
+            </div>
+
+        </div>
+
+
+        <div class="kpi-card">
+
+            <h3>Recovery Opportunities</h3>
+
+            <div class="kpi-value">
+                2,689
+            </div>
+
+            <div class="kpi-subtitle">
+                Failed transactions
+            </div>
+
+        </div>
+
+
+        <div class="kpi-card">
+
+            <h3>Revenue at Risk</h3>
+
+            <div class="kpi-value">
+                ₹3.32 Cr
+            </div>
+
+            <div class="kpi-subtitle">
+                Potential revenue
+            </div>
+
+        </div>
+
+
+        <div class="kpi-card value-box">
+
+            <h3>Recovered Revenue</h3>
+
+            <div class="kpi-value">
+                ₹1.80 Cr
+            </div>
+
+            <div class="kpi-subtitle">
+                Successfully recovered
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="overall-rate">
+
+        <h3>Overall Recovery Rate</h3>
+
+        <div class="rate-value">
+            54.33%
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- RECOVERY ANALYTICS -->
+<!-- ================================================= -->
+
+<div class="card">
+
+    <h2>📈 Recovery Analytics</h2>
+
+    <div class="analytics-grid">
+
+
+        <!-- ACTION PERFORMANCE -->
+
+        <div class="analytics-box">
+
+            <h3>Most Effective Recovery Actions</h3>
+
+            <div class="metric-row">
+
+                <span>Retry Payment</span>
+
+                <span class="metric-value">
+                    77.96%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Urgent Checkout Reminder</span>
+
+                <span class="metric-value">
+                    76.02%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Retry After Delay</span>
+
+                <span class="metric-value">
+                    54.02%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Checkout Reminder</span>
+
+                <span class="metric-value">
+                    53.09%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Alternative Payment Method</span>
+
+                <span class="metric-value">
+                    44.76%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Payment Reminder</span>
+
+                <span class="metric-value">
+                    32.14%
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- MODEL PERFORMANCE -->
+
+        <div class="analytics-box">
+
+            <h3>🤖 Best ML Model</h3>
+
+            <div class="metric-row">
+
+                <span>Model</span>
+
+                <span class="metric-value">
+                    Gradient Boosting
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Accuracy</span>
+
+                <span class="metric-value">
+                    64.68%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Precision</span>
+
+                <span class="metric-value">
+                    66.24%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>Recall</span>
+
+                <span class="metric-value">
+                    71.23%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>F1 Score</span>
+
+                <span class="metric-value">
+                    68.65%
+                </span>
+
+            </div>
+
+
+            <div class="metric-row">
+
+                <span>ROC-AUC</span>
+
+                <span class="metric-value">
+                    0.6887
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- TRANSACTION INPUT -->
+<!-- ================================================= -->
+
+<div class="card">
+
+    <h2>💳 Transaction Details</h2>
+
+    <div class="form-grid">
+
+
+        <div class="field">
+
+            <label>
+                Amount (₹)
+            </label>
+
+            <input
+                id="amount"
+                type="number"
+                value="23123.58"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Payment Method
+            </label>
+
+            <select id="payment_method">
+
+                <option>UPI</option>
+
+                <option>
+                    Credit Card
+                </option>
+
+                <option>
+                    Debit Card
+                </option>
+
+                <option>
+                    Net Banking
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Failure Reason
+            </label>
+
+            <select id="failure_reason">
+
+                <option>
+                    Bank Timeout
+                </option>
+
+                <option>
+                    Network Error
+                </option>
+
+                <option>
+                    Technical Error
+                </option>
+
+                <option>
+                    Card Declined
+                </option>
+
+                <option>
+                    Insufficient Balance
+                </option>
+
+                <option>
+                    Checkout Abandoned
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Checkout Time (seconds)
+            </label>
+
+            <input
+                id="checkout_time_seconds"
+                type="number"
+                value="450"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Previous Transactions
+            </label>
+
+            <input
+                id="previous_transactions"
+                type="number"
+                value="15"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Previous Successes
+            </label>
+
+            <input
+                id="previous_successes"
+                type="number"
+                value="9"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Previous Failures
+            </label>
+
+            <input
+                id="previous_failures"
+                type="number"
+                value="6"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Customer Lifetime Value (₹)
+            </label>
+
+            <input
+                id="customer_lifetime_value"
+                type="number"
+                value="78000"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Previous Success Rate
+            </label>
+
+            <input
+                id="previous_success_rate"
+                type="number"
+                step="0.01"
+                value="0.60"
+            >
+
+        </div>
+
+    </div>
+
+
+    <button
+        id="predict-btn"
+        class="predict-btn"
+        onclick="predictRecovery()"
+    >
+        🔍 Predict Recovery
+    </button>
+
+
+    <div
+        id="error"
+        class="error"
+    ></div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- AI PREDICTION -->
+<!-- ================================================= -->
+
+<div
+    id="results"
+    class="card results"
+>
+
+    <h2>
+        🤖 RecoverAI Prediction
+    </h2>
+
+
+    <div class="result-grid">
+
+
+        <!-- PROBABILITY -->
+
+        <div class="result-card">
+
+            <h3>
+                Recovery Probability
+            </h3>
+
+            <div
+                id="probability"
+                class="result-value"
+            >
+                0%
+            </div>
+
+
+            <div class="probability-bar">
+
+                <div
+                    id="probability-fill"
+                    class="probability-fill"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRIORITY -->
+
+        <div class="result-card">
+
+            <h3>
+                Recovery Priority
+            </h3>
+
+            <div
+                id="priority"
+                class="result-value"
+            ></div>
+
+        </div>
+
+
+        <!-- ACTION -->
+
+        <div class="result-card action-box">
+
+            <h3>
+                Recommended Action
+            </h3>
+
+            <div
+                id="action"
+                class="result-value"
+            ></div>
+
+        </div>
+
+
+        <!-- VALUE -->
+
+        <div class="result-card value-box">
+
+            <h3>
+                Estimated Recovery Value
+            </h3>
+
+            <div
+                id="value"
+                class="result-value"
+            ></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+
+
+<!-- FOOTER -->
+
+<div class="footer">
+
+    RecoverAI • AI-Powered Payment Recovery
+
+</div>
+
+
+<script>
+
+
+async function predictRecovery() {
+
+    const button = document.getElementById("predict-btn");
+    button.disabled = true;
+    button.innerText = "⏳ Analyzing Transaction...";
+
+    document.getElementById(
+        "error"
+    ).innerText = "";
+
+
+    const data = {
+
+
+        amount: Number(
+
+            document.getElementById(
+                "amount"
+            ).value
+
+        ),
+
+
+        payment_method:
+
+            document.getElementById(
+                "payment_method"
+            ).value,
+
+
+        failure_reason:
+
+            document.getElementById(
+                "failure_reason"
+            ).value,
+
+
+        checkout_time_seconds: Number(
+
+            document.getElementById(
+                "checkout_time_seconds"
+            ).value
+
+        ),
+
+
+        previous_transactions: Number(
+
+            document.getElementById(
+                "previous_transactions"
+            ).value
+
+        ),
+
+
+        previous_successes: Number(
+
+            document.getElementById(
+                "previous_successes"
+            ).value
+
+        ),
+
+
+        previous_failures: Number(
+
+            document.getElementById(
+                "previous_failures"
+            ).value
+
+        ),
+
+
+        customer_lifetime_value: Number(
+
+            document.getElementById(
+                "customer_lifetime_value"
+            ).value
+
+        ),
+
+
+        previous_success_rate: Number(
+
+            document.getElementById(
+                "previous_success_rate"
+            ).value
+
+        )
+
+    };
+
+
+    try {
+
+
+        const response = await fetch(
+
+            "/predict",
+
+            {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json"
+
+                },
+
+                body:
+                    JSON.stringify(data)
+
+            }
+
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+
+                result.error ||
+                "Prediction failed"
+
+            );
+
+        }
+
+
+        /* PROBABILITY */
+
+
+        const probability =
+            Number(
+                result.recovery_probability
+            );
+
+
+        document.getElementById(
+            "probability"
+        ).innerText =
+
+            probability.toFixed(2)
+            + "%";
+
+
+        document.getElementById(
+            "probability-fill"
+        ).style.width =
+
+            probability + "%";
+
+
+        /* PRIORITY */
+
+
+        const priorityElement =
+            document.getElementById(
+                "priority"
+            );
+
+
+        priorityElement.innerText =
+            result.recovery_priority;
+
+
+        priorityElement.className =
+            "result-value priority";
+
+
+        if (
+            result.recovery_priority
+            === "High"
+        ) {
+
+            priorityElement.classList.add(
+                "priority-high"
+            );
+
+        }
+
+        else if (
+            result.recovery_priority
+            === "Medium"
+        ) {
+
+            priorityElement.classList.add(
+                "priority-medium"
+            );
+
+        }
+
+        else {
+
+            priorityElement.classList.add(
+                "priority-low"
+            );
+
+        }
+
+
+        /* ACTION */
+
+
+        document.getElementById(
+            "action"
+        ).innerText =
+
+            result.recommended_action;
+
+
+        /* RECOVERY VALUE */
+
+
+        document.getElementById(
+            "value"
+        ).innerText =
+
+            "₹ " +
+
+            Number(
+                result.estimated_recovery_value
+            ).toLocaleString(
+
+                "en-IN",
+
+                {
+
+                    minimumFractionDigits: 2,
+
+                    maximumFractionDigits: 2
+
+                }
+
+            );
+
+
+        /* SHOW RESULTS */
+
+
+        document.getElementById(
+            "results"
+        ).style.display = "block";
+
+        button.disabled = false;
+        button.innerText = "🔍 Predict Recovery";
+
+
+        /* SCROLL */
+
+
+        document.getElementById(
+            "results"
+        ).scrollIntoView({
+
+            behavior: "smooth"
+
+        });
+
+
+    }
+
+
+    catch (error) {
+
+
+        console.error(error);
+
+
+        button.disabled = false;
+        button.innerText = "🔍 Predict Recovery";
+
+        document.getElementById(
+            "error"
+        ).innerText =
+
+            "Unable to get prediction. " +
+            "Please make sure the RecoverAI API is running.";
+
+    }
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
